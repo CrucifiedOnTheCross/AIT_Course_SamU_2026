@@ -1,7 +1,6 @@
 from builtins import range
 import numpy as np
 from random import shuffle
-from past.builtins import xrange
 
 def softmax_loss_naive(W, X, y, reg):
     """
@@ -32,8 +31,18 @@ def softmax_loss_naive(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
+    num_train = X.shape[0]
+    for i in range(num_train):
+        scores = X[i].dot(W)
+        scores -= np.max(scores)
+        probs = np.exp(scores)
+        probs /= np.sum(probs)
+        loss -= np.log(probs[y[i]])
+        for j in range(W.shape[1]):
+            dW[:, j] += probs[j] * X[i]
+        dW[:, y[i]] -= X[i]
+    loss = loss / num_train + reg * np.sum(W * W)
+    dW = dW / num_train + 2 * reg * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
@@ -57,8 +66,13 @@ def softmax_loss_vectorized(W, X, y, reg):
     # regularization!                                                           #
     #############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
+    scores = X.dot(W)
+    scores -= np.max(scores, axis=1, keepdims=True)
+    exp_scores = np.exp(scores)
+    probs = exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
+    loss = -np.mean(np.log(probs[np.arange(X.shape[0]), y])) + reg * np.sum(W * W)
+    probs[np.arange(X.shape[0]), y] -= 1
+    dW = X.T.dot(probs) / X.shape[0] + 2 * reg * W
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
